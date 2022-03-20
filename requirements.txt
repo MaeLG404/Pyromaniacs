@@ -14,9 +14,6 @@ certifi==2021.10.8
 click-plugins==1.1.1
 cligj==0.7.2
 comtypes==1.1.10
-conda==4.11.0
-conda-build==3.21.4
-conda-verify==3.4.2
 cytoolz==0.11.0
 daal4py==2021.5.0
 dask==2021.10.0
