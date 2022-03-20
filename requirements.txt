@@ -1,4 +1,3 @@
-anaconda-navigator==2.1.2
 appdirs==1.4.4
 argh==0.26.2
 arrow==0.13.1
