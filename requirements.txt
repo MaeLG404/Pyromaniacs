@@ -1,7 +1,6 @@
 # This file may be used to create an environment using:
 # $ conda create --name <env> --file <this file>
 # platform: win-64
-abseil-cpp=20200225.2=ha925a31_2
 alabaster=0.7.12=pyhd3eb1b0_0
 altair=4.1.0=py_1
 anaconda=custom=py38_1
