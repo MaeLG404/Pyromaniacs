@@ -1,9 +1,9 @@
-mypy-extensions==0.4.3
-pep8==1.7.1
-protobuf==3.19.4
-pyls-spyder==0.4.0
-pyproj==3.2.1
-scikit-image==0.18.3
-Shapely==1.8.0
+matplotlib==3.5.1
+numpy==1.20.3
+numpy-base==1.20.3
+pandas==1.4.1
+plotly==5.1.0
+pydeck==0.6.1
+scipy==1.7.3
+seaborn==0.11.2
 statsmodels==0.12.2
-tables==3.6.1
