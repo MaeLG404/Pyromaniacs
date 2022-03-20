@@ -46,7 +46,6 @@ ply==3.11
 protobuf==3.19.4
 pyarrow==4.0.1
 pycosat==0.6.3
-pycurl==7.44.1
 pyls-spyder==0.4.0
 pyodbc===4.0.0-unsupported
 pyproj==3.3.0
