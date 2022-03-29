@@ -267,7 +267,8 @@ if st.checkbox('Use sample data', value = True):
             [https://drive.google.com/file/d/1JeuQ8Rx41JkJtYfPXnt4Wsi8TUD9OOJ7/view?usp=sharing](https://drive.google.com/file/d/1JeuQ8Rx41JkJtYfPXnt4Wsi8TUD9OOJ7/view?usp=sharing)")
 
 else :
-    path = 'https://drive.google.com/file/d/1JeuQ8Rx41JkJtYfPXnt4Wsi8TUD9OOJ7/view?usp=sharing'
+    url = 'https://drive.google.com/file/d/1JeuQ8Rx41JkJtYfPXnt4Wsi8TUD9OOJ7/view?usp=sharing'
+    path = 'https://drive.google.com/uc?export=download&id='+url.split('/')[-2]
     df_fires = load_data(path)
     #uploaded_file = st.file_uploader("Choose a file")
     #if uploaded_file is not None:
