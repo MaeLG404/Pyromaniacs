@@ -13,12 +13,13 @@ import plotly.express as px
 import plotly.figure_factory as ff
 from PIL import Image
 
-
+import requests
+from io import StringIO
 
 
 st.set_page_config(layout="wide")
 st.title('Wildfires in USA - Analysis from 1992 to 2018')
-data_filename = 'wildfires_final_frac0.05.csv'
+data_filename = 'wildfires_final_v2.csv'
 
 
 
@@ -34,7 +35,8 @@ months_labels = ['Jan', 'Feb','Mar', 'Apr','May','Jun', 'Jul', 'Aug', 'Sep', 'Oc
 days_labels = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun']
 seasons_labels = ['Winter', 'Spring', 'Summer', 'Fall']
 causes_labels = ['Individuals\' mistake', 'Criminal', 'Infrastructure accident', 'Natural (lightning)', 'Other/Unknown']
-causes_labels_split = ['Individuals\' \nmistake', 'Criminal', 'Infrastructure \naccident', 'Natural \n(lightning)', 'Other/\nUnknown']
+causes_labels_split = ['Individuals\' \nmistake', 'Criminal', 'Infrastructure \naccident',
+'Natural \n(lightning)', 'Other/\nUnknown']
 regions_list = ['East', 'West', 'North', 'South', 'Center',
      'North-East', 'North-West', 'South-East', 'South-West', 'Tropical']
 regions_list_split = ['East', 'West', 'North', 'South', 'Center',
@@ -86,7 +88,7 @@ plt.rcParams.update({'font.size': 9})
 # ------------------------------------------
 @st.cache
 def load_data(data_filename):
-    data = pd.read_csv(data_filename, index_col = 0)
+    data = pd.read_csv(data_filename)
     data['DISCOVERY_DATE'] = pd.to_datetime(data['DISCOVERY_DATE'])
     data['DISC_DOY'] = data['DISCOVERY_DATE'].dt.dayofyear
     data['Region'] = [dico_regions[x] for x in data.STATE]
@@ -264,26 +266,33 @@ if st.checkbox('Use sample data', value = True):
     st.markdown("### Warning : You're using a sample file that contains 5% of the complete dataset.")
     st.markdown("Please refer to our github repository to generate the complete dataset.")
     st.markdown("Or you can downloaded it at : \
-            [https://drive.google.com/file/d/1JeuQ8Rx41JkJtYfPXnt4Wsi8TUD9OOJ7/view?usp=sharing](https://drive.google.com/file/d/1JeuQ8Rx41JkJtYfPXnt4Wsi8TUD9OOJ7/view?usp=sharing)")
+            [https://drive.google.com/file/d/1JeuQ8Rx41JkJtYfPXnt4Wsi8TUD9OOJ7/view?usp=sharing]\
+            (https://drive.google.com/file/d/1JeuQ8Rx41JkJtYfPXnt4Wsi8TUD9OOJ7/view?usp=sharing)")
 
 else :
-    url = 'https://drive.google.com/file/d/1JeuQ8Rx41JkJtYfPXnt4Wsi8TUD9OOJ7/view?usp=sharing'
-    path = 'https://drive.google.com/uc?export=download&id='+url.split('/')[-2]
-    df_fires = load_data(path)
-    #uploaded_file = st.file_uploader("Choose a file")
-    #if uploaded_file is not None:
-    #    data_load_state = st.text('Loading data...')
-    #    df_fires = load_data(uploaded_file)
-    #    data_load_state.text("Done! (using st.cache)")
-    #else :
-    #    data_load_state = st.text('Loading data...')
-    #    df_fires = load_data(data_filename)
-    #    # Notify the reader that the data was successfully loaded.
-    #    data_load_state.text("Done! (using st.cache)")
-    #    st.markdown("### Warning : You're using a sample file that contains 5% of the complete dataset.")
-    #    st.markdown("Please refer to our github repository to generate the complete dataset.")
-    #    st.markdown("Or you can downloaded it at : \
-    #        [https://drive.google.com/file/d/1JeuQ8Rx41JkJtYfPXnt4Wsi8TUD9OOJ7/view?usp=sharing](https://drive.google.com/file/d/1JeuQ8Rx41JkJtYfPXnt4Wsi8TUD9OOJ7/view?usp=sharing)")
+    # url = 'https://drive.google.com/file/d/1JeuQ8Rx41JkJtYfPXnt4Wsi8TUD9OOJ7/view?usp=sharing'
+    # file_id = url.split('/')[-2]
+    # dwn_url='https://drive.google.com/uc?export=download&id=' + file_id
+    # url2 = requests.get(dwn_url).text
+    # csv_raw = StringIO(url2)
+    # df = pd.read_csv(csv_raw)
+    # st.write(df.head())
+    uploaded_file = st.file_uploader("Choose a file")
+    if uploaded_file is not None:
+       data_load_state = st.text('Loading data...')
+       df_fires = load_data(uploaded_file)
+       data_load_state.text("Done! (using st.cache)")
+    else :
+       data_load_state = st.text('Loading data...')
+       df_fires = load_data(data_filename)
+       # Notify the reader that the data was successfully loaded.
+       data_load_state.text("Done! (using st.cache)")
+       st.markdown("### Warning : You're using a sample file that contains 5% of the complete dataset.")
+       st.markdown("Please refer to our github repository to generate the complete dataset.")
+       st.markdown("Or you can downloaded it at : \
+           [https://drive.google.com/file/d/1JeuQ8Rx41JkJtYfPXnt4Wsi8TUD9OOJ7/view?usp=sharing]\
+           (https://drive.google.com/file/d/1JeuQ8Rx41JkJtYfPXnt4Wsi8TUD9OOJ7/view?usp=sharing)")
+
 
 # ------------------------------------------
 # -------------------------- Create Sub-datframe used for plots later
@@ -369,7 +378,8 @@ weekday_size_cause = pd.pivot_table(data=day_size_cause,
 duration_causes=df_fires.groupby(['DISC_YEAR','CAUSE'], as_index=False)['DURATION'].mean()
 
 
-causes_year=pd.crosstab(df_fires['DISC_YEAR'], df_fires['CAUSE']).stack().reset_index().rename(columns={'DISC_YEAR':'Year', 'CAUSE':'cause', 0:'count'})
+causes_year=pd.crosstab(df_fires['DISC_YEAR'], df_fires['CAUSE']).stack().reset_index().rename(columns=
+    {'DISC_YEAR':'Year', 'CAUSE':'cause', 0:'count'})
 ct_classe_cause = pd.crosstab(df_fires.FIRE_SIZE_CLASS, df_fires.CAUSE)
 ct_classe_cause_perc = ct_classe_cause.apply(lambda x : (x/x.sum()) *100, axis  = 1)
 ct_classe_cause_perc = ct_classe_cause_perc[causes_labels]
@@ -422,14 +432,29 @@ genre = st.radio(
 #----------------------------------------------
 if genre == 'Our process':
     st.header('The project')
-    st.markdown("We embarked on this study of wildfires in the United States with ambitious goals: highlight the existence of a correlation between the development of fires in the country and the changes in climate that have been taking place over the last twenty years. We planned to collect weather and climate data that would allow us to model this relationship, and even to anticipate the geography of increasing risks in the coming years.")
-    st.markdown("We quickly encountered predictable obstacles: the unavailability of the necessary data, the lack of technical knowledge (especially in climate and weather sciences), unsufficient time to explore further the data banks of the American observatories and to sort the information collected in thousands of stations...).")
-    st.markdown("We also quickly noticed that the evolution of fires was not monolithic and homogeneous: there are not *more* fires, at least not everywhere, however fires change, their causes evolve, the damage caused expands in some states, the seasonality of fires extends... We then redefined our project in a more realistic way, as an investigation : **does the data support the hypothesis of increased vulnerability of the US to wildfires, and if so, how does it take shape ?**")
+    st.markdown("We embarked on this study of wildfires in the United States with ambitious goals: \
+        highlight the existence of a correlation between the development of fires in the country and \
+        the changes in climate that have been taking place over the last twenty years. We planned to \
+        collect weather and climate data that would allow us to model this relationship, and even to \
+        anticipate the geography of increasing risks in the coming years.")
+    st.markdown("We quickly encountered predictable obstacles: the unavailability of the necessary data, \
+        the lack of technical knowledge (especially in climate and weather sciences), unsufficient time to \
+        explore further the data banks of the American observatories and to sort the information collected \
+        in thousands of stations...).")
+    st.markdown("We also quickly noticed that the evolution of fires was not monolithic and homogeneous: \
+        there are not *more* fires, at least not everywhere, however fires change, their causes evolve, \
+        the damage caused expands in some states, the seasonality of fires extends... We then redefined our \
+        project in a more realistic way, as an investigation : **does the data support the hypothesis of \
+        increased vulnerability of the US to wildfires, and if so, how does it take shape ?**")
 
 
 
     st.header('The dataset')
-    st.markdown("We worked with a large dataset that puts together information collected from 1992 to 2018 on forest fires in the USA by local authorities of all kinds (police, firefighters, forest or park administrations...). The dataset has been made available by the Federal Department of Agriculture, and compiled by K.C Short under the following reference  : Short, K. C., *Spatial wildfire occurrence data for the United States*, 1992-2018, [FPA_FOD_20210617] (5th Edition)")
+    st.markdown("We worked with a large dataset that puts together information collected from 1992 to \
+        2018 on forest fires in the USA by local authorities of all kinds (police, firefighters, forest \
+        or park administrations...). The dataset has been made available by the Federal Department of \
+        Agriculture, and compiled by K.C Short under the following reference  : Short, K. C., *Spatial \
+        wildfire occurrence data for the United States*, 1992-2018, [FPA_FOD_20210617] (5th Edition)")
     st.write('The initial data set consisted of 2,166,753 rows and 37 columns.')
 
     st.markdown('**We selected 15 variables, and dropped 22.**')
@@ -497,7 +522,7 @@ if genre == 'Our process':
   13: 'Description responsable de la zone',
   14: 'Utile pour classer les feux',
   15: 'Utile pour classer les feux'}})
-    if st.button('The selected variables') :
+    if st.checkbox('The selected variables') :
         st.dataframe(pertinentes)
 
     non_pertinentes=pd.DataFrame({'Nom Variable': {0: 'FOD_ID',
@@ -584,7 +609,7 @@ if genre == 'Our process':
   18: 'Redondant avec CONT_DATE',
   19: 'Redondant avec Comté',
   20: 'Redondant avec Comté'}})
-    if st.button("The variables we have not selected"):
+    if st.checkbox("The variables we have not selected"):
         st.dataframe(non_pertinentes)
 
     st.header('Data processing')
@@ -618,14 +643,15 @@ if genre == 'Our process':
                                     5:'Boucle',
                                     6:"importation d'un jeu externe"}
 })
-    if st.button('The variables we created'):
+    if st.checkbox('The variables we created'):
         st.dataframe(createdvars)
 
     st.subheader("Other transformations")
     st.markdown("""
     We also proceeded to the following processings :
     * Conversion of the FIRE_SIZE variable into hectares
-    * Imputation of the median of the corresponding 'FIRE_SIZE_CLASS' category to the missing variables of the DURATION variable, which represented 39.4% of the data set.
+    * Imputation of the median of the corresponding 'FIRE_SIZE_CLASS' \
+    category to the missing variables of the DURATION variable, which represented 39.4% of the data set.
     * Suppression of fires with a duration greater than 200 days, considering that it is very implausible.
     * Simplification of the variable CAUSE from 14 to 5 categories.
     """)
@@ -635,15 +661,17 @@ if genre == 'Our process':
 
     st.header("Additional data")
     st.write("We used external data at different stages of the research.")
-    if st.button("View external data"):
+    if st.checkbox("View external data"):
         st.markdown("""
     * state capitals.csv : State capitals and their geographical coordinates
-    * a shapefile including all the US States' silhouettes, for mapping purposes. It can be downloaded here : https://www2.census.gov/geo/tiger/GENZ2018/shp/cb_2018_us_state_500k.zip
+    * a shapefile including all the US States' silhouettes, for mapping purposes. It can be downloaded \
+    here : https://www2.census.gov/geo/tiger/GENZ2018/shp/cb_2018_us_state_500k.zip
     * uscities.csv : population data for major U.S. cities
     * usstates.csv : a file with the name of each state
     """)
         st.markdown("""
-    We also recovered and cleaned two climatological datasets, in the perspective of a correlation analysis, and possible modelling, of the relationships between fire and climate :
+    We also recovered and cleaned two climatological datasets, in the perspective of a correlation \
+    analysis, and possible modelling, of the relationships between fire and climate :
     * states_dcsi_clean.csv, about average precipitations from 2000 to 2018
     * states_temp_clean.csv, about average monthly temperatures for each State from 1996 to 2013
     """)
@@ -721,7 +749,7 @@ if genre == 'Global':
                     hoverinfo = 'skip',
                     mode = 'text' )  )
                 fig2.update_layout(
-                    title={'text':'<b>Average number of fires per state</b>', 'font':{'size':18}},
+                    title_text='Average number of fires per state per year',
                     geo = dict(
                         scope='usa',
                         projection=go.layout.geo.Projection(type = 'albers usa'),
@@ -763,7 +791,7 @@ if genre == 'Global':
                     locations='St',
                     color='Total burnt area (ha)',
                     locationmode='USA-states',
-                    color_continuous_scale='RdPu',
+                    color_continuous_scale='YlOrBr',
                     range_color = [1, 400000],
                     animation_frame = 'year',
                     hover_name = 'State',
@@ -776,7 +804,7 @@ if genre == 'Global':
                     hoverinfo = 'skip',
                     mode = 'text' )  )
                 fig.update_layout(
-                    title_text='Number of fires per state per year',
+                    title_text='Surface burnt per year',
                     geo = dict(
                         scope='usa',
                         projection=go.layout.geo.Projection(type = 'albers usa'),
@@ -804,7 +832,7 @@ if genre == 'Global':
                     hoverinfo = 'skip',
                     mode = 'text' )  )
                 fig2.update_layout(
-                    title={'text':'<b>Average surface burnt per state per year</b>', 'font':{'size':18}},
+                    title_text='Average surface burnt per state per year',
                     geo = dict(
                         scope='usa',
                         projection=go.layout.geo.Projection(type = 'albers usa'),
@@ -832,10 +860,12 @@ if genre == 'Global':
 
         with c2:
             if check_cause :
-                fig=px.bar(pd.DataFrame(ct_classe_cause_perc.stack()).reset_index().rename(columns={'FIRE_SIZE_CLASS':'class', 'CAUSE':'Cause',0:'%'}), x='class', y='%', color='Cause', color_discrete_sequence = causes_color,
+                fig=px.bar(pd.DataFrame(ct_classe_cause_perc.stack()).reset_index().rename(columns=
+                    {'FIRE_SIZE_CLASS':'class', 'CAUSE':'Cause',0:'%'}), x='class', y='%',
+                color='Cause', color_discrete_sequence = causes_color,
                     template = 'simple_white')
                 fig.update_layout(title_text='<b>Causes of fires for each fire size category<b>',
-                    title_x=0.5, showlegend=False,
+                    title_x=0.5, showlegend=True,
                     plot_bgcolor='white',font = dict(family= 'Helvetica', size= 15))
                 st.plotly_chart(fig, use_container_width=True)
                 st.markdown('The largest fires are by far triggered by lightings, whereas individual mistakes are less damaging.')
@@ -890,22 +920,7 @@ if genre == 'Global':
                 st.markdown('&emsp; The average area of a fire increases progressively throughout \
                 the period despite significant annual variations; the regression line (grey) \
                 confirms this trend.')
-        if check_cause :
-            fig = px.bar(
-                    surface_months_cause,
-                    x= 'DISC_MONTH', y = 'FIRE_SIZE_avg', color = 'CAUSE',
-                    error_y='conf_int',
-                    color_discrete_map = dico_causes_colors, category_orders = dico_causes,
-                    labels = {'DISC_MONTH' : '', 'DURATION_avg' : 'Surface (ha)'},
-                    template = 'simple_white'
-                )
-            fig.update_layout(title_text='<b>Surface fires depending on the month and the cause</b>',
-                    title_x=0.5, showlegend=True, barmode = 'group',
-                    plot_bgcolor='white',
-                    font = dict(family= 'Helvetica', size= 15) )
-            fig.update_yaxes(range=[0, 300])
-            st.plotly_chart(fig, use_container_width=True)
-            st.markdown("##### Wildfires caused by lightings are always the most extensive one.")
+
 
 
     if option_main_variable == fires_causes :
@@ -973,7 +988,7 @@ if genre == 'Global':
                 labels = {'DISC_MONTH' : '', 'N_avg' : 'Number of fires'},
                 template = 'simple_white'
             )
-            fig.update_layout(title_text='<b>Number of fires depending of the cause and the month</b>',
+            fig.update_layout(title_text='<b>Number of fires depending of the human cause and the month</b>',
                 title_x=0.5, barmode = 'group',
                 plot_bgcolor='white',
                 font = dict(family= 'Helvetica', size= 15) )
@@ -982,6 +997,22 @@ if genre == 'Global':
             st.markdown("&emsp; Burning of garbage is particularly involved from February through May. \
                 Festive fires are also more frequent in the summer, until September, and \
                 fireworks are especially visible in July (the month of the national holiday).")
+            fig = px.bar(
+                    surface_months_cause,
+                    x= 'DISC_MONTH', y = 'FIRE_SIZE_avg', color = 'CAUSE',
+                    error_y='conf_int',
+                    color_discrete_map = dico_causes_colors, category_orders = dico_causes,
+                    labels = {'DISC_MONTH' : '', 'DURATION_avg' : 'Surface (ha)'},
+                    template = 'simple_white'
+                )
+            fig.update_layout(title_text='<b>Surface fires depending on the month and the cause</b>',
+                    title_x=0.5, showlegend=True, barmode = 'group',
+                    plot_bgcolor='white',
+                    font = dict(family= 'Helvetica', size= 15) )
+            fig.update_yaxes(range=[0, 300])
+            st.plotly_chart(fig, use_container_width=True)
+            st.markdown("##### Wildfires caused by lightings are always the most extensive one.")
+
 
 
     if option_main_variable == fires_dur :
@@ -1005,7 +1036,7 @@ if genre == 'Global':
                     duration_months_cause,
                     x= 'DISC_MONTH', y = 'DURATION_avg', color = 'CAUSE',
                     error_y='conf_int',
-                    color_discrete_sequence = causes_color,
+                    color_discrete_map = dico_causes_colors, category_orders = dico_causes,
                     labels = {'DISC_MONTH' : '', 'DURATION_avg' : 'Duration (days)'},
                     template = 'simple_white'
                 )
@@ -1025,7 +1056,7 @@ if genre == 'Global':
                 plt.title('Change in the fire duration over the period',  fontsize=15, fontweight='bold')
                 plt.xticks(range(1992,2018))
                 st.pyplot(fig.figure)
-                st.markdown("&emsp; ##### There has been a slow trend in the average duration of fires since the early 1990s. \
+                st.markdown("##### There has been a slow trend in the average duration of fires since the early 1990s. \
                     This is certainly one of the major signs of the worsening fire phenomenon in the USA.")
                 fig = px.bar(
                     duration_months,
@@ -1180,7 +1211,7 @@ elif genre == 'By State' :
                 ('Yes', 'No'))
         st.header(selected_state)
         if cause_on == 'Yes' :
-            c1, c2 = st.columns((1.5, 1)) # "Hide" the 3rd column
+            c1, c2 = st.columns((1.5, 1))
         else :
             c1, c2 = st.columns((1.5, 1))
         with c1 :
@@ -1214,7 +1245,7 @@ elif genre == 'By State' :
 
             elif map_type_fires == 'All years' :
                 if selected_state=='California':
-                    image = Image.open('Pictures/California.png')
+                    image = Image.open('California.png')
                     st.image(image)
                     if st.button('Create the interactive version'):
                         options_layers = st.multiselect( 'Which causes to add :', causes_labels, causes_labels)
@@ -1238,13 +1269,13 @@ elif genre == 'By State' :
                                     pitch=0,
                                 ),layers= layers,
                             ))
-                if selected_state=='Florida':
-                    image = Image.open('Pictures/Florida.png')
+                elif selected_state=='Florida':
+                    image = Image.open('Florida.png')
                     st.image(image)
                     if st.button('Create the interactive version'):
-                        options_layers2 = st.multiselect( 'Which causes to add :', causes_labels, causes_labels)
+                        options_layers = st.multiselect( 'Which causes to add :', causes_labels, causes_labels)
                         layers = []
-                        for lay in options_layers2 :
+                        for lay in options_layers :
                             i = causes_labels.index(lay)
                             layers.append( pdk.Layer(
                                 'ScatterplotLayer',
@@ -1263,12 +1294,11 @@ elif genre == 'By State' :
                                     pitch=0,
                                 ),layers= layers,
                             ))
-                
                 else:
-                    options_layers3 = st.multiselect( 'Which causes to add :',
+                    options_layers = st.multiselect( 'Which causes to add :',
                     causes_labels, causes_labels)
                     layers = []
-                    for lay in options_layers3 :
+                    for lay in options_layers :
                         i = causes_labels.index(lay)
                         layers.append( pdk.Layer(
                              'ScatterplotLayer',
@@ -1282,8 +1312,8 @@ elif genre == 'By State' :
                             initial_view_state=pdk.ViewState(latitude=df_sub['lat'].mean(),
                                                              longitude=df_sub['lon'].mean(),zoom=3,pitch=0),
                             layers= layers,
-                        ))
-                
+                    ))
+
 
             if cause_on == 'Yes':
                 f2 = make_lineplot(df_sub_count, x='Year', y='count',
@@ -1299,7 +1329,7 @@ elif genre == 'By State' :
                 plt.title('Number of fires per year', fontsize=15, fontweight='bold')
                 f2 = make_lineplot(state_surf_year,
                     'DISC_YEAR', 'FIRE_SIZE',
-                    xtitle = '', x_rot = 45, 
+                    xtitle = '', x_rot = 90, xlabels = range(1992, 2019),
                     ytitle = 'Total surface burnt\n(hectares)', color_plot='lightslategray')
                 plt.title('Total surface burnt per year', fontsize=15, fontweight='bold')
                 f3 = make_boxplot(state_nb_month,
@@ -1319,11 +1349,12 @@ elif genre == 'By State' :
                 plt.title('Distribution of the wildfires causes', fontsize=15, fontweight='bold')
                 st.pyplot(f1, use_container_width=True)
                 f2 = make_lineplot(df_sub_count, x='Year', y='count',
-                    hue = 'cause', hue_order= causes_labels,
+                    hue = 'cause',
                     ytitle = '',
                     palette = causes_color,
                     width = 8, height = 2.5)
-                plt.title('Number of fires per year in ' + selected_state + "\ndepending of the cause", fontsize=15, fontweight='bold')
+                plt.title('Number of fires per year in ' + selected_state + "\ndepending of the cause",
+                    fontsize=15, fontweight='bold')
                 st.pyplot(f2, use_container_width=True)
             else :
                 f4 = ridgeplot(df_sub)
@@ -1334,7 +1365,9 @@ elif genre == 'By State' :
                     we can observe phenomena of lengthening of the fire season \
                     (for example in Puerto Rico, Colorado or Arizona), or on the contrary, \
                     a brutal radicalization of fires over one or two seasons (in Kansas)." )
-                f5=make_lineplot(duration_year_state.loc[duration_year_state['State']==selected_state], x='Year', y='Avg duration of a fire (days)', x_rot = 45, marker = 'o', width = 9, height = 5, color_plot='#B26A22')
+                f5=make_lineplot(duration_year_state.loc[duration_year_state['State']==selected_state],
+                    x='Year', y='Avg duration of a fire (days)', x_rot = 45, marker = 'o',
+                    width = 9, height = 5, color_plot='#B26A22')
                 plt.ylabel('Average duration (days)', fontsize=12)
                 plt.xlabel('', fontsize=12)
                 plt.xticks(range(1992,2018))
@@ -1347,7 +1380,8 @@ elif genre == 'By State' :
             f3 = px.bar(df_sub.groupby(['DISC_YEAR', 'CAUSE'],
                 as_index = False).agg({'FIRE_SIZE':'sum'}),
                 x='DISC_YEAR', y='FIRE_SIZE',
-                color = 'CAUSE',      color_discrete_map = dico_causes_colors, category_orders = dico_causes, template='simple_white', labels = {'DISC_YEAR' : '', 'FIRE_SIZE' : 'Damaged surface (ha)'}
+                color = 'CAUSE', color_discrete_sequence = causes_color, template='simple_white',
+                labels = {'DISC_YEAR' : '', 'FIRE_SIZE' : 'Damaged surface (ha)'}
                 )
             f3.update_layout(title_text='<b>Total surface burnt per year depending of the cause<b>',
                     title_x=0.5, showlegend=True, barmode = 'group',
