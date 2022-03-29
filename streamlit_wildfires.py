@@ -267,20 +267,22 @@ if st.checkbox('Use sample data', value = True):
             [https://drive.google.com/file/d/1JeuQ8Rx41JkJtYfPXnt4Wsi8TUD9OOJ7/view?usp=sharing](https://drive.google.com/file/d/1JeuQ8Rx41JkJtYfPXnt4Wsi8TUD9OOJ7/view?usp=sharing)")
 
 else :
-    uploaded_file = st.file_uploader("Choose a file")
-    if uploaded_file is not None:
-        data_load_state = st.text('Loading data...')
-        df_fires = load_data(uploaded_file)
-        data_load_state.text("Done! (using st.cache)")
-    else :
-        data_load_state = st.text('Loading data...')
-        df_fires = load_data(data_filename)
-        # Notify the reader that the data was successfully loaded.
-        data_load_state.text("Done! (using st.cache)")
-        st.markdown("### Warning : You're using a sample file that contains 5% of the complete dataset.")
-        st.markdown("Please refer to our github repository to generate the complete dataset.")
-        st.markdown("Or you can downloaded it at : \
-            [https://drive.google.com/file/d/1JeuQ8Rx41JkJtYfPXnt4Wsi8TUD9OOJ7/view?usp=sharing](https://drive.google.com/file/d/1JeuQ8Rx41JkJtYfPXnt4Wsi8TUD9OOJ7/view?usp=sharing)")
+    path = 'https://drive.google.com/file/d/1JeuQ8Rx41JkJtYfPXnt4Wsi8TUD9OOJ7/view?usp=sharing'
+    df_fires = load_data(path)
+    #uploaded_file = st.file_uploader("Choose a file")
+    #if uploaded_file is not None:
+    #    data_load_state = st.text('Loading data...')
+    #    df_fires = load_data(uploaded_file)
+    #    data_load_state.text("Done! (using st.cache)")
+    #else :
+    #    data_load_state = st.text('Loading data...')
+    #    df_fires = load_data(data_filename)
+    #    # Notify the reader that the data was successfully loaded.
+    #    data_load_state.text("Done! (using st.cache)")
+    #    st.markdown("### Warning : You're using a sample file that contains 5% of the complete dataset.")
+    #    st.markdown("Please refer to our github repository to generate the complete dataset.")
+    #    st.markdown("Or you can downloaded it at : \
+    #        [https://drive.google.com/file/d/1JeuQ8Rx41JkJtYfPXnt4Wsi8TUD9OOJ7/view?usp=sharing](https://drive.google.com/file/d/1JeuQ8Rx41JkJtYfPXnt4Wsi8TUD9OOJ7/view?usp=sharing)")
 
 # ------------------------------------------
 # -------------------------- Create Sub-datframe used for plots later
