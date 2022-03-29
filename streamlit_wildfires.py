@@ -19,7 +19,7 @@ from io import StringIO
 
 st.set_page_config(layout="wide")
 st.title('Wildfires in USA - Analysis from 1992 to 2018')
-data_filename = 'wildfires_final_v2.csv'
+data_filename = 'wildfires_final_frac0.05.csv'
 
 
 
